@@ -23,9 +23,8 @@
     </script>
     <style>
         body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        #tab-ai.active { display: flex; flex-direction: column; }
+        .tab-content { display: none !important; }
+        .tab-content.active { display: block !important; }
         .glass-nav { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
         
         /* Chat bubble styles */
@@ -133,20 +132,22 @@
         </section>
 
         <!-- Tab 4: AI Chat -->
-        <section id="tab-ai" class="tab-content h-[calc(100vh-140px)] flex flex-col">
-            <h2 class="text-xl font-bold mb-4">Penasihat AI</h2>
-            <div id="chatBox" class="flex-1 overflow-y-auto space-y-4 p-2 mb-4">
-                <div class="flex flex-col items-start">
-                    <div class="chat-bubble-ai p-3 max-w-[85%] text-sm shadow-sm">
-                        Hai! Saya penasihat kewangan AI anda. Saya boleh bantu anda analisis kewangan anda atau beri tips pengurusan berdasarkan tahap prestasi kewangan anda. Ada apa-apa soalan?
+        <section id="tab-ai" class="tab-content h-[calc(100vh-140px)]">
+            <div class="flex flex-col h-full">
+                <h2 class="text-xl font-bold mb-4">Penasihat AI</h2>
+                <div id="chatBox" class="flex-1 overflow-y-auto space-y-4 p-2 mb-4">
+                    <div class="flex flex-col items-start">
+                        <div class="chat-bubble-ai p-3 max-w-[85%] text-sm shadow-sm">
+                            Hai! Saya penasihat kewangan AI anda. Saya boleh bantu anda analisis kewangan anda atau beri tips pengurusan berdasarkan tahap prestasi kewangan anda. Ada apa-apa soalan?
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="flex gap-2">
-                <input type="text" id="aiInput" placeholder="Tanya sesuatu..." class="flex-1 p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:outline-none focus:border-primary">
-                <button onclick="sendAIChat()" class="bg-primary text-white p-3 rounded-xl hover:bg-blue-600 transition">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
+                <div class="flex gap-2">
+                    <input type="text" id="aiInput" placeholder="Tanya sesuatu..." class="flex-1 p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:outline-none focus:border-primary">
+                    <button onclick="sendAIChat()" class="bg-primary text-white p-3 rounded-xl hover:bg-blue-600 transition">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
             </div>
         </section>
     </main>
