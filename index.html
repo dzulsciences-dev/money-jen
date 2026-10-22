@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -30,18 +29,13 @@
         /* Chat bubble styles */
         .chat-bubble-user { background-color: #3b82f6; color: white; border-radius: 1rem 1rem 0 1rem; }
         .chat-bubble-ai { background-color: #e5e7eb; color: black; border-radius: 1rem 1rem 1rem 0; }
-        .dark .chat-bubble-ai { background-color: #374151; color: white; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 dark:bg-dark dark:text-gray-100 pb-20">
+<body class="bg-gray-50 text-gray-900 pb-20">
 
     <!-- Top Bar -->
-    <header class="p-4 flex justify-between items-center bg-white dark:bg-darkCard shadow-sm sticky top-0 z-10 transition-colors">
+    <header class="p-4 flex justify-between items-center bg-white shadow-sm sticky top-0 z-10 transition-colors">
         <h1 class="text-xl font-bold text-primary"><i class="fas fa-wallet mr-2"></i>Money-Jen</h1>
-        <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-            <i class="fas fa-moon dark:hidden"></i>
-            <i class="fas fa-sun hidden dark:block text-yellow-400"></i>
-        </button>
     </header>
 
     <!-- Main Content Area -->
@@ -51,38 +45,38 @@
         <section id="tab-dashboard" class="tab-content active space-y-4">
             
             <!-- Gamification Section -->
-            <div class="bg-white dark:bg-darkCard p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 text-center">
-                <h3 class="text-sm text-gray-500 dark:text-gray-400 font-semibold mb-1">Status Kesihatan Kewangan</h3>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 text-center">
+                <h3 class="text-sm text-gray-500 font-semibold mb-1">Status Kesihatan Kewangan</h3>
                 <p id="displayLevel" class="text-2xl font-bold mb-2 text-gray-500">Menilai... ⏳</p>
-                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-2">
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
                     <div id="scoreBar" class="bg-gray-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
                 </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Skor anda: <span id="displayScore">0</span>/100</p>
+                <p class="text-xs text-gray-500">Skor anda: <span id="displayScore">0</span>/100</p>
             </div>
 
-            <div class="bg-white dark:bg-darkCard p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                 <div class="flex justify-between items-start mb-2">
-                    <h2 class="text-sm text-gray-500 dark:text-gray-400">Gaji Bulanan</h2>
+                    <h2 class="text-sm text-gray-500">Gaji Bulanan</h2>
                     <button onclick="openModal('salaryModal')" class="text-primary text-sm hover:underline"><i class="fas fa-edit"></i> Edit</button>
                 </div>
                 <p class="text-3xl font-bold">RM <span id="displaySalary">0.00</span></p>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-2xl border border-red-100 dark:border-red-900/30">
-                    <h3 class="text-xs text-red-500 dark:text-red-400 mb-1">Total Komitmen</h3>
-                    <p class="text-lg font-semibold text-red-600 dark:text-red-400">RM <span id="displayTotalCommitment">0.00</span></p>
+                <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
+                    <h3 class="text-xs text-red-500 mb-1">Total Komitmen</h3>
+                    <p class="text-lg font-semibold text-red-600">RM <span id="displayTotalCommitment">0.00</span></p>
                 </div>
-                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/30">
-                    <h3 class="text-xs text-blue-500 dark:text-blue-400 mb-1">Baki (Tolak Komitmen)</h3>
-                    <p class="text-lg font-semibold text-blue-600 dark:text-blue-400">RM <span id="displayBalanceAfterCommitment">0.00</span></p>
+                <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                    <h3 class="text-xs text-blue-500 mb-1">Baki (Tolak Komitmen)</h3>
+                    <p class="text-lg font-semibold text-blue-600">RM <span id="displayBalanceAfterCommitment">0.00</span></p>
                 </div>
             </div>
 
-            <div class="bg-green-50 dark:bg-green-900/20 p-5 rounded-2xl border border-green-100 dark:border-green-900/30">
-                <h3 class="text-sm text-green-600 dark:text-green-400 mb-1">Baki Terkini (Selepas Belanja)</h3>
-                <p class="text-3xl font-bold text-green-700 dark:text-green-400">RM <span id="displayCurrentBalance">0.00</span></p>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Jumlah Belanja: RM <span id="displayTotalExpense">0.00</span></p>
+            <div class="bg-green-50 p-5 rounded-2xl border border-green-100">
+                <h3 class="text-sm text-green-600 mb-1">Baki Terkini (Selepas Belanja)</h3>
+                <p class="text-3xl font-bold text-green-700">RM <span id="displayCurrentBalance">0.00</span></p>
+                <p class="text-xs text-gray-500 mt-2">Jumlah Belanja: RM <span id="displayTotalExpense">0.00</span></p>
             </div>
         </section>
 
@@ -93,7 +87,7 @@
                 <div class="flex justify-between items-center mb-3">
                     <h2 class="text-lg font-bold">Komitmen Bulanan</h2>
                     <div class="flex gap-2">
-                        <button onclick="copyPreviousCommitments()" class="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 p-2 rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-gray-300 transition" title="Salin Komitmen Bulan Lepas"><i class="fas fa-copy"></i></button>
+                        <button onclick="copyPreviousCommitments()" class="bg-gray-200 text-gray-700 p-2 rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-gray-300 transition" title="Salin Komitmen Bulan Lepas"><i class="fas fa-copy"></i></button>
                         <button onclick="openModal('commitmentModal')" class="bg-primary text-white p-2 rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-blue-600 transition" title="Tambah Komitmen"><i class="fas fa-plus"></i></button>
                     </div>
                 </div>
@@ -102,7 +96,7 @@
                 </div>
             </div>
             
-            <hr class="border-gray-200 dark:border-gray-800">
+            <hr class="border-gray-200">
             
             <!-- Belanja -->
             <div>
@@ -120,13 +114,13 @@
         <section id="tab-statistik" class="tab-content space-y-6">
             <h2 class="text-xl font-bold">Statistik Kewangan</h2>
             
-            <div class="bg-white dark:bg-darkCard p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-                <h3 class="text-sm font-semibold mb-2 text-center text-gray-700 dark:text-gray-300">Perbelanjaan Mengikut Kategori</h3>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <h3 class="text-sm font-semibold mb-2 text-center text-gray-700">Perbelanjaan Mengikut Kategori</h3>
                 <canvas id="expensePieChart" width="400" height="300"></canvas>
             </div>
 
-            <div class="bg-white dark:bg-darkCard p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-                <h3 class="text-sm font-semibold mb-2 text-center text-gray-700 dark:text-gray-300">Trend Bulanan (Pendapatan vs Perbelanjaan)</h3>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <h3 class="text-sm font-semibold mb-2 text-center text-gray-700">Trend Bulanan (Pendapatan vs Perbelanjaan)</h3>
                 <canvas id="trendBarChart" width="400" height="300"></canvas>
             </div>
         </section>
@@ -143,7 +137,7 @@
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <input type="text" id="aiInput" placeholder="Tanya sesuatu..." class="flex-1 p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:outline-none focus:border-primary">
+                    <input type="text" id="aiInput" placeholder="Tanya sesuatu..." class="flex-1 p-3 rounded-xl border border-gray-300 bg-white focus:outline-none focus:border-primary">
                     <button onclick="sendAIChat()" class="bg-primary text-white p-3 rounded-xl hover:bg-blue-600 transition">
                         <i class="fas fa-paper-plane"></i>
                     </button>
@@ -153,7 +147,7 @@
     </main>
 
     <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 w-full bg-white/90 dark:bg-darkCard/90 glass-nav border-t border-gray-200 dark:border-gray-800 pb-safe">
+    <nav class="fixed bottom-0 w-full bg-white/90 glass-nav border-t border-gray-200 pb-safe">
         <ul class="flex justify-around items-center p-3 text-xs">
             <li>
                 <button onclick="switchTab('dashboard')" class="nav-btn active flex flex-col items-center p-2 text-primary" data-target="dashboard">
@@ -161,17 +155,17 @@
                 </button>
             </li>
             <li>
-                <button onclick="switchTab('transactions')" class="nav-btn flex flex-col items-center p-2 text-gray-500 dark:text-gray-400 hover:text-primary transition" data-target="transactions">
+                <button onclick="switchTab('transactions')" class="nav-btn flex flex-col items-center p-2 text-gray-500 hover:text-primary transition" data-target="transactions">
                     <i class="fas fa-exchange-alt text-lg mb-1"></i> Transaksi
                 </button>
             </li>
             <li>
-                <button onclick="switchTab('statistik')" class="nav-btn flex flex-col items-center p-2 text-gray-500 dark:text-gray-400 hover:text-primary transition" data-target="statistik">
+                <button onclick="switchTab('statistik')" class="nav-btn flex flex-col items-center p-2 text-gray-500 hover:text-primary transition" data-target="statistik">
                     <i class="fas fa-chart-line text-lg mb-1"></i> Statistik
                 </button>
             </li>
             <li>
-                <button onclick="switchTab('ai')" class="nav-btn flex flex-col items-center p-2 text-gray-500 dark:text-gray-400 hover:text-primary transition" data-target="ai">
+                <button onclick="switchTab('ai')" class="nav-btn flex flex-col items-center p-2 text-gray-500 hover:text-primary transition" data-target="ai">
                     <i class="fas fa-robot text-lg mb-1"></i> AI Advisor
                 </button>
             </li>
@@ -179,11 +173,11 @@
     </nav>
 
     <!-- Modals -->
-    <!-- Custom Alert Modal (To replace standard alert()) -->
+    <!-- Custom Alert Modal -->
     <div id="alertModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white dark:bg-darkCard p-6 rounded-2xl w-11/12 max-w-sm shadow-xl border border-gray-100 dark:border-gray-700">
+        <div class="bg-white p-6 rounded-2xl w-11/12 max-w-sm shadow-xl border border-gray-100">
             <h3 id="alertTitle" class="text-lg font-bold mb-2">Makluman</h3>
-            <p id="alertMessage" class="text-sm text-gray-600 dark:text-gray-300 mb-6"></p>
+            <p id="alertMessage" class="text-sm text-gray-600 mb-6"></p>
             <div class="flex justify-end">
                 <button onclick="closeModal('alertModal')" class="bg-primary text-white px-4 py-2 rounded-lg text-sm">Tutup</button>
             </div>
@@ -192,9 +186,9 @@
 
     <!-- Edit Salary Modal -->
     <div id="salaryModal" class="fixed inset-0 bg-black/50 z-40 hidden flex items-center justify-center">
-        <div class="bg-white dark:bg-darkCard p-6 rounded-2xl w-11/12 max-w-sm shadow-xl transition-all">
+        <div class="bg-white p-6 rounded-2xl w-11/12 max-w-sm shadow-xl transition-all">
             <h3 class="text-lg font-bold mb-4">Kemaskini Gaji</h3>
-            <input type="number" id="salaryInput" placeholder="Contoh: 3000" class="w-full p-3 mb-4 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+            <input type="number" id="salaryInput" placeholder="Contoh: 3000" class="w-full p-3 mb-4 rounded-xl border border-gray-300 bg-white">
             <div class="flex justify-end gap-2">
                 <button onclick="closeModal('salaryModal')" class="px-4 py-2 text-gray-500">Batal</button>
                 <button onclick="saveSalary()" class="bg-primary text-white px-4 py-2 rounded-lg">Simpan</button>
@@ -204,10 +198,10 @@
 
     <!-- Add Commitment Modal -->
     <div id="commitmentModal" class="fixed inset-0 bg-black/50 z-40 hidden flex items-center justify-center">
-        <div class="bg-white dark:bg-darkCard p-6 rounded-2xl w-11/12 max-w-sm shadow-xl">
+        <div class="bg-white p-6 rounded-2xl w-11/12 max-w-sm shadow-xl">
             <h3 class="text-lg font-bold mb-4">Tambah Komitmen</h3>
-            <input type="text" id="comName" placeholder="Nama Komitmen (Contoh: Sewa)" class="w-full p-3 mb-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-            <input type="number" id="comAmount" placeholder="Jumlah (RM)" class="w-full p-3 mb-4 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+            <input type="text" id="comName" placeholder="Nama Komitmen (Contoh: Sewa)" class="w-full p-3 mb-3 rounded-xl border border-gray-300 bg-white">
+            <input type="number" id="comAmount" placeholder="Jumlah (RM)" class="w-full p-3 mb-4 rounded-xl border border-gray-300 bg-white">
             <div class="flex justify-end gap-2">
                 <button onclick="closeModal('commitmentModal')" class="px-4 py-2 text-gray-500">Batal</button>
                 <button onclick="saveCommitment()" class="bg-primary text-white px-4 py-2 rounded-lg">Tambah</button>
@@ -217,11 +211,11 @@
 
     <!-- Add Expense Modal -->
     <div id="expenseModal" class="fixed inset-0 bg-black/50 z-40 hidden flex items-center justify-center">
-        <div class="bg-white dark:bg-darkCard p-6 rounded-2xl w-11/12 max-w-sm shadow-xl">
+        <div class="bg-white p-6 rounded-2xl w-11/12 max-w-sm shadow-xl">
             <h3 class="text-lg font-bold mb-4">Tambah Perbelanjaan</h3>
-            <input type="text" id="expName" placeholder="Keterangan (Contoh: Nasi Lemak)" class="w-full p-3 mb-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-            <input type="number" id="expAmount" placeholder="Jumlah (RM)" class="w-full p-3 mb-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-            <select id="expCategory" class="w-full p-3 mb-4 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+            <input type="text" id="expName" placeholder="Keterangan (Contoh: Nasi Lemak)" class="w-full p-3 mb-3 rounded-xl border border-gray-300 bg-white">
+            <input type="number" id="expAmount" placeholder="Jumlah (RM)" class="w-full p-3 mb-3 rounded-xl border border-gray-300 bg-white">
+            <select id="expCategory" class="w-full p-3 mb-4 rounded-xl border border-gray-300 bg-white">
                 <option value="Makan">Makan & Minum</option>
                 <option value="Pengangkutan">Minyak / Pengangkutan</option>
                 <option value="Shopping">Beli Belah</option>
@@ -295,10 +289,10 @@
             
             document.querySelectorAll('.nav-btn').forEach(el => {
                 el.classList.remove('text-primary');
-                el.classList.add('text-gray-500', 'dark:text-gray-400');
+                el.classList.add('text-gray-500');
             });
             const activeBtn = document.querySelector(`[data-target="${tabId}"]`);
-            activeBtn.classList.remove('text-gray-500', 'dark:text-gray-400');
+            activeBtn.classList.remove('text-gray-500');
             activeBtn.classList.add('text-primary');
 
             if (tabId === 'statistik') {
@@ -308,12 +302,6 @@
 
         window.openModal = function(id) { document.getElementById(id).classList.remove('hidden'); }
         window.closeModal = function(id) { document.getElementById(id).classList.add('hidden'); }
-
-        // --- Theme Toggle ---
-        const themeToggleBtn = document.getElementById('themeToggle');
-        themeToggleBtn.addEventListener('click', () => {
-            document.documentElement.classList.toggle('dark');
-        });
 
         // --- Data Logic (Sync to UI & Firebase) ---
         function loadData() {
@@ -522,7 +510,7 @@
                 comList.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Tiada komitmen ditambah bulan ini.</p>';
             } else {
                 comList.innerHTML = currentMonthComs.map(c => `
-                    <div class="bg-white dark:bg-darkCard p-4 rounded-xl border border-gray-100 dark:border-gray-800 flex items-center justify-between shadow-sm">
+                    <div class="bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between shadow-sm">
                         <div class="flex items-center gap-3">
                             <input type="checkbox" ${c.isPaid ? 'checked' : ''} onchange="toggleCommitment('${c.id}')" class="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary">
                             <div>
@@ -546,9 +534,9 @@
                     const dateObj = new Date(e.date);
                     const dateStr = `${dateObj.getDate()}/${dateObj.getMonth()+1}`;
                     return `
-                    <div class="bg-white dark:bg-darkCard p-4 rounded-xl border border-gray-100 dark:border-gray-800 flex items-center justify-between shadow-sm">
+                    <div class="bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between shadow-sm">
                         <div class="flex items-center gap-3">
-                            <div class="bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg text-primary text-center min-w-[50px]">
+                            <div class="bg-blue-50 p-2 rounded-lg text-primary text-center min-w-[50px]">
                                 <span class="text-xs block font-bold">${e.category.substring(0,3).toUpperCase()}</span>
                             </div>
                             <div>
@@ -557,7 +545,7 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-3">
-                            <p class="font-bold text-red-500 dark:text-red-400">- RM ${e.amount.toFixed(2)}</p>
+                            <p class="font-bold text-red-500">- RM ${e.amount.toFixed(2)}</p>
                             <button onclick="deleteExpense('${e.id}')" class="text-gray-400 hover:text-red-600 text-xs"><i class="fas fa-times"></i></button>
                         </div>
                     </div>
@@ -568,9 +556,8 @@
         // --- Chart.js ---
         function updateChart() {
             const st = window.appState;
-            const isDark = document.documentElement.classList.contains('dark');
-            const textColor = isDark ? '#e5e7eb' : '#374151';
-            const gridColor = isDark ? '#374151' : '#e5e7eb';
+            const textColor = '#374151';
+            const gridColor = '#e5e7eb';
 
             // 1. PIE CHART: Perbelanjaan Mengikut Kategori
             const ctxPie = document.getElementById('expensePieChart').getContext('2d');
@@ -586,7 +573,7 @@
             if(pieLabels.length === 0) {
                 myPieChart = new Chart(ctxPie, {
                     type: 'doughnut',
-                    data: { labels: ['Tiada Data'], datasets: [{ data: [1], backgroundColor: [isDark ? '#374151' : '#e5e7eb'] }] },
+                    data: { labels: ['Tiada Data'], datasets: [{ data: [1], backgroundColor: ['#e5e7eb'] }] },
                     options: { plugins: { legend: { labels: { color: textColor } } } }
                 });
             } else {
@@ -737,12 +724,6 @@ Beri nasihat yang praktikal berdasarkan maklumat ini jika relevan dengan soalan.
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
         }
-        
-        // Initial setup for default theme if needed
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.classList.add('dark');
-        }
-
     </script>
 </body>
 </html>
