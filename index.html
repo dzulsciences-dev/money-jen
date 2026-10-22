@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money-Jen - Pengurusan Kewangan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        dark: '#111827',
+                        darkCard: '#1f2937'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        #tab-ai.active { display: flex; flex-direction: column; }
+        .glass-nav { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        
+        /* Chat bubble styles */
+        .chat-bubble-user { background-color: #3b82f6; color: white; border-radius: 1rem 1rem 0 1rem; }
+        .chat-bubble-ai { background-color: #e5e7eb; color: black; border-radius: 1rem 1rem 1rem 0; }
+        .dark .chat-bubble-ai { background-color: #374151; color: white; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-dark dark:text-gray-100 pb-20">
+
+    <!-- Top Bar -->
+    <header class="p-4 flex justify-between items-center bg-white dark:bg-darkCard shadow-sm sticky top-0 z-10 transition-colors">
+        <h1 class="text-xl font-bold text-primary"><i class="fas fa-wallet mr-2"></i>Money-Jen</h1>
+        <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+            <i class="fas fa-moon dark:hidden"></i>
+            <i class="fas fa-sun hidden dark:block text-yellow-400"></i>
+        </button>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto p-4 max-w-md">
+        
+        <!-- Tab 1: Dashboard -->
+        <section id="tab-dashboard" class="tab-content active space-y-4">
+            
+            <!-- Gamification Section -->
+            <div class="bg-white dark:bg-darkCard p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 text-center">
+                <h3 class="text-sm text-gray-500 dark:text-gray-400 font-semibold mb-1">Status Kesihatan Kewangan</h3>
+                <p id="displayLevel" class="text-2xl font-bold mb-2 text-gray-500">Menilai... ⏳</p>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-2">
+                    <div id="scoreBar" class="bg-gray-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Skor anda: <span id="displayScore">0</span>/100</p>
+            </div>
+
+            <div class="bg-white dark:bg-darkCard p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+                <div class="flex justify-between items-start mb-2">
+                    <h2 class="text-sm text-gray-500 dark:text-gray-400">Gaji Bulanan</h2>
+                    <button onclick="openModal('salaryModal')" class="text-primary text-sm hover:underline"><i class="fas fa-edit"></i> Edit</button>
+                </div>
+                <p class="text-3xl font-bold">RM <span id="displaySalary">0.00</span></p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-2xl border border-red-100 dark:border-red-900/30">
+                    <h3 class="text-xs text-red-500 dark:text-red-400 mb-1">Total Komitmen</h3>
+                    <p class="text-lg font-semibold text-red-600 dark:text-red-400">RM <span id="displayTotalCommitment">0.00</span></p>
+                </div>
+                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/30">
+                    <h3 class="text-xs text-blue-500 dark:text-blue-400 mb-1">Baki (Tolak Komitmen)</h3>
+                    <p class="text-lg font-semibold text-blue-600 dark:text-blue-400">RM <span id="displayBalanceAfterCommitment">0.00</span></p>
+                </div>
+            </div>
+
+            <div class="bg-green-50 dark:bg-green-900/20 p-5 rounded-2xl border border-green-100 dark:border-green-900/30">
+                <h3 class="text-sm text-green-600 dark:text-green-400 mb-1">Baki Terkini (Selepas Belanja)</h3>
+                <p class="text-3xl font-bold text-green-700 dark:text-green-400">RM <span id="displayCurrentBalance">0.00</span></p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Jumlah Belanja: RM <span id="displayTotalExpense">0.00</span></p>
+            </div>
+        </section>
+
+        <!-- Tab 2: Transactions (Komitmen & Belanja) -->
+        <section id="tab-transactions" class="tab-content space-y-6">
+            <!-- Komitmen -->
+            <div>
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-bold">Komitmen Bulanan</h2>
+                    <div class="flex gap-2">
+                        <button onclick="copyPreviousCommitments()" class="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 p-2 rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-gray-300 transition" title="Salin Komitmen Bulan Lepas"><i class="fas fa-copy"></i></button>
+                        <button onclick="openModal('commitmentModal')" class="bg-primary text-white p-2 rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-blue-600 transition" title="Tambah Komitmen"><i class="fas fa-plus"></i></button>
+                    </div>
+                </div>
+                <div id="commitmentList" class="space-y-3">
+                    <p class="text-center text-gray-400 text-sm mt-4">Tiada komitmen ditambah.</p>
+                </div>
+            </div>
+            
+            <hr class="border-gray-200 dark:border-gray-800">
+            
+            <!-- Belanja -->
+            <div>
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-bold">Perbelanjaan</h2>
+                    <button onclick="openModal('expenseModal')" class="bg-primary text-white p-2 rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-blue-600"><i class="fas fa-plus"></i></button>
+                </div>
+                <div id="expenseList" class="space-y-3">
+                    <p class="text-center text-gray-400 text-sm mt-4">Tiada perbelanjaan direkodkan.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 3: Statistik -->
+        <section id="tab-statistik" class="tab-content space-y-6">
+            <h2 class="text-xl font-bold">Statistik Kewangan</h2>
+            
+            <div class="bg-white dark:bg-darkCard p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+                <h3 class="text-sm font-semibold mb-2 text-center text-gray-700 dark:text-gray-300">Perbelanjaan Mengikut Kategori</h3>
+                <canvas id="expensePieChart" width="400" height="300"></canvas>
+            </div>
+
+            <div class="bg-white dark:bg-darkCard p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+                <h3 class="text-sm font-semibold mb-2 text-center text-gray-700 dark:text-gray-300">Trend Bulanan (Pendapatan vs Perbelanjaan)</h3>
+                <canvas id="trendBarChart" width="400" height="300"></canvas>
+            </div>
+        </section>
+
+        <!-- Tab 4: AI Chat -->
+        <section id="tab-ai" class="tab-content h-[calc(100vh-140px)] flex flex-col">
+            <h2 class="text-xl font-bold mb-4">Penasihat AI</h2>
+            <div id="chatBox" class="flex-1 overflow-y-auto space-y-4 p-2 mb-4">
+                <div class="flex flex-col items-start">
+                    <div class="chat-bubble-ai p-3 max-w-[85%] text-sm shadow-sm">
+                        Hai! Saya penasihat kewangan AI anda. Saya boleh bantu anda analisis kewangan anda atau beri tips pengurusan berdasarkan tahap prestasi kewangan anda. Ada apa-apa soalan?
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="aiInput" placeholder="Tanya sesuatu..." class="flex-1 p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:outline-none focus:border-primary">
+                <button onclick="sendAIChat()" class="bg-primary text-white p-3 rounded-xl hover:bg-blue-600 transition">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 w-full bg-white/90 dark:bg-darkCard/90 glass-nav border-t border-gray-200 dark:border-gray-800 pb-safe">
+        <ul class="flex justify-around items-center p-3 text-xs">
+            <li>
+                <button onclick="switchTab('dashboard')" class="nav-btn active flex flex-col items-center p-2 text-primary" data-target="dashboard">
+                    <i class="fas fa-home text-lg mb-1"></i> Dashboard
+                </button>
+            </li>
+            <li>
+                <button onclick="switchTab('transactions')" class="nav-btn flex flex-col items-center p-2 text-gray-500 dark:text-gray-400 hover:text-primary transition" data-target="transactions">
+                    <i class="fas fa-exchange-alt text-lg mb-1"></i> Transaksi
+                </button>
+            </li>
+            <li>
+                <button onclick="switchTab('statistik')" class="nav-btn flex flex-col items-center p-2 text-gray-500 dark:text-gray-400 hover:text-primary transition" data-target="statistik">
+                    <i class="fas fa-chart-line text-lg mb-1"></i> Statistik
+                </button>
+            </li>
+            <li>
+                <button onclick="switchTab('ai')" class="nav-btn flex flex-col items-center p-2 text-gray-500 dark:text-gray-400 hover:text-primary transition" data-target="ai">
+                    <i class="fas fa-robot text-lg mb-1"></i> AI Advisor
+                </button>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Modals -->
+    <!-- Custom Alert Modal (To replace standard alert()) -->
+    <div id="alertModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-darkCard p-6 rounded-2xl w-11/12 max-w-sm shadow-xl border border-gray-100 dark:border-gray-700">
+            <h3 id="alertTitle" class="text-lg font-bold mb-2">Makluman</h3>
+            <p id="alertMessage" class="text-sm text-gray-600 dark:text-gray-300 mb-6"></p>
+            <div class="flex justify-end">
+                <button onclick="closeModal('alertModal')" class="bg-primary text-white px-4 py-2 rounded-lg text-sm">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Salary Modal -->
+    <div id="salaryModal" class="fixed inset-0 bg-black/50 z-40 hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-darkCard p-6 rounded-2xl w-11/12 max-w-sm shadow-xl transition-all">
+            <h3 class="text-lg font-bold mb-4">Kemaskini Gaji</h3>
+            <input type="number" id="salaryInput" placeholder="Contoh: 3000" class="w-full p-3 mb-4 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('salaryModal')" class="px-4 py-2 text-gray-500">Batal</button>
+                <button onclick="saveSalary()" class="bg-primary text-white px-4 py-2 rounded-lg">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Commitment Modal -->
+    <div id="commitmentModal" class="fixed inset-0 bg-black/50 z-40 hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-darkCard p-6 rounded-2xl w-11/12 max-w-sm shadow-xl">
+            <h3 class="text-lg font-bold mb-4">Tambah Komitmen</h3>
+            <input type="text" id="comName" placeholder="Nama Komitmen (Contoh: Sewa)" class="w-full p-3 mb-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+            <input type="number" id="comAmount" placeholder="Jumlah (RM)" class="w-full p-3 mb-4 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('commitmentModal')" class="px-4 py-2 text-gray-500">Batal</button>
+                <button onclick="saveCommitment()" class="bg-primary text-white px-4 py-2 rounded-lg">Tambah</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Expense Modal -->
+    <div id="expenseModal" class="fixed inset-0 bg-black/50 z-40 hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-darkCard p-6 rounded-2xl w-11/12 max-w-sm shadow-xl">
+            <h3 class="text-lg font-bold mb-4">Tambah Perbelanjaan</h3>
+            <input type="text" id="expName" placeholder="Keterangan (Contoh: Nasi Lemak)" class="w-full p-3 mb-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+            <input type="number" id="expAmount" placeholder="Jumlah (RM)" class="w-full p-3 mb-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+            <select id="expCategory" class="w-full p-3 mb-4 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+                <option value="Makan">Makan & Minum</option>
+                <option value="Pengangkutan">Minyak / Pengangkutan</option>
+                <option value="Shopping">Beli Belah</option>
+                <option value="Hiburan">Hiburan</option>
+                <option value="Lain-lain">Lain-lain</option>
+            </select>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('expenseModal')" class="px-4 py-2 text-gray-500">Batal</button>
+                <button onclick="saveExpense()" class="bg-primary text-white px-4 py-2 rounded-lg">Tambah</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase & Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global state for memory UI before sync
+        window.appState = {
+            salary: 0,
+            commitments: [],
+            expenses: []
+        };
+        let myPieChart = null;
+        let myBarChart = null;
+
+        // Firebase Configuration
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'finance-app';
+        let firebaseConfig;
+        let app, db, auth;
+        let userId = null;
+
+        try {
+            if (typeof __firebase_config !== 'undefined') {
+                firebaseConfig = JSON.parse(__firebase_config);
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                signInAnonymously(auth).then(() => {
+                    console.log("Logged in anonymously");
+                }).catch((error) => console.error(error));
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        loadData();
+                    }
+                });
+            } else {
+                console.warn("No Firebase config detected. Running offline mode.");
+                updateUI(); // Run offline dummy
+            }
+        } catch (e) {
+            console.error("Firebase init error:", e);
+        }
+
+        // --- Custom Alert ---
+        window.showAlert = function(message, title="Makluman") {
+            document.getElementById('alertTitle').innerText = title;
+            document.getElementById('alertMessage').innerText = message;
+            document.getElementById('alertModal').classList.remove('hidden');
+        };
+
+        // --- Navigation ---
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('text-primary');
+                el.classList.add('text-gray-500', 'dark:text-gray-400');
+            });
+            const activeBtn = document.querySelector(`[data-target="${tabId}"]`);
+            activeBtn.classList.remove('text-gray-500', 'dark:text-gray-400');
+            activeBtn.classList.add('text-primary');
+
+            if (tabId === 'statistik') {
+                updateChart();
+            }
+        };
+
+        window.openModal = function(id) { document.getElementById(id).classList.remove('hidden'); }
+        window.closeModal = function(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // --- Theme Toggle ---
+        const themeToggleBtn = document.getElementById('themeToggle');
+        themeToggleBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
+
+        // --- Data Logic (Sync to UI & Firebase) ---
+        function loadData() {
+            if (!userId || !db) return;
+            
+            const docRef = doc(db, 'artifacts', appId, 'users', userId, 'financeData', 'main');
+            
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    window.appState = docSnap.data();
+                    if(!window.appState.commitments) window.appState.commitments = [];
+                    if(!window.appState.expenses) window.appState.expenses = [];
+                }
+                updateUI();
+            }, (error) => {
+                console.error("Error loading data: ", error);
+            });
+        }
+
+        async function saveDataToCloud() {
+            if (!userId || !db) return;
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'financeData', 'main');
+                await setDoc(docRef, window.appState);
+            } catch (error) {
+                console.error("Save error: ", error);
+            }
+        }
+
+        window.saveSalary = function() {
+            const val = parseFloat(document.getElementById('salaryInput').value);
+            if (isNaN(val) || val < 0) return showAlert("Sila masukkan nilai yang sah.");
+            window.appState.salary = val;
+            closeModal('salaryModal');
+            updateUI();
+            saveDataToCloud();
+        };
+
+        window.saveCommitment = function() {
+            const name = document.getElementById('comName').value;
+            const amount = parseFloat(document.getElementById('comAmount').value);
+            if (!name || isNaN(amount) || amount <= 0) return showAlert("Sila lengkapkan borang dengan betul.");
+            
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            
+            window.appState.commitments.push({
+                id: Date.now().toString(),
+                name,
+                amount,
+                isPaid: false,
+                month: currentMonth
+            });
+            
+            document.getElementById('comName').value = '';
+            document.getElementById('comAmount').value = '';
+            closeModal('commitmentModal');
+            updateUI();
+            saveDataToCloud();
+        };
+
+        window.toggleCommitment = function(id) {
+            const com = window.appState.commitments.find(c => c.id === id);
+            if (com) {
+                com.isPaid = !com.isPaid;
+                updateUI();
+                saveDataToCloud();
+            }
+        };
+
+        window.deleteCommitment = function(id) {
+            window.appState.commitments = window.appState.commitments.filter(c => c.id !== id);
+            updateUI();
+            saveDataToCloud();
+        };
+
+        window.saveExpense = function() {
+            const name = document.getElementById('expName').value;
+            const amount = parseFloat(document.getElementById('expAmount').value);
+            const category = document.getElementById('expCategory').value;
+            
+            if (!name || isNaN(amount) || amount <= 0) return showAlert("Sila lengkapkan borang dengan betul.");
+            
+            window.appState.expenses.push({
+                id: Date.now().toString(),
+                name,
+                amount,
+                category,
+                date: new Date().toISOString()
+            });
+            
+            document.getElementById('expName').value = '';
+            document.getElementById('expAmount').value = '';
+            closeModal('expenseModal');
+            updateUI();
+            saveDataToCloud();
+        };
+        
+        window.deleteExpense = function(id) {
+            window.appState.expenses = window.appState.expenses.filter(e => e.id !== id);
+            updateUI();
+            saveDataToCloud();
+        };
+
+        window.copyPreviousCommitments = function() {
+            const d = new Date();
+            d.setMonth(d.getMonth() - 1);
+            const prevMonth = d.toISOString().slice(0, 7);
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            
+            // Pastikan data lama serasi (jika sebelum ini tiada 'month' property)
+            window.appState.commitments = window.appState.commitments.map(c => {
+                if (!c.month) c.month = currentMonth;
+                return c;
+            });
+
+            const prevComs = window.appState.commitments.filter(c => c.month === prevMonth);
+            
+            if (prevComs.length === 0) {
+                return showAlert("Tiada rekod komitmen dijumpai untuk bulan lepas.");
+            }
+            
+            let addedCount = 0;
+            prevComs.forEach(pc => {
+                // Semak jika komitmen yang sama sudah ada di bulan semasa
+                const exists = window.appState.commitments.some(c => c.month === currentMonth && c.name.toLowerCase() === pc.name.toLowerCase());
+                if (!exists) {
+                    window.appState.commitments.push({
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                        name: pc.name,
+                        amount: pc.amount,
+                        isPaid: false,
+                        month: currentMonth
+                    });
+                    addedCount++;
+                }
+            });
+            
+            if (addedCount > 0) {
+                showAlert(`${addedCount} komitmen berjaya disalin dari bulan lepas.`, "Berjaya");
+                updateUI();
+                saveDataToCloud();
+            } else {
+                showAlert("Semua komitmen bulan lepas telah pun wujud dalam senarai bulan ini.");
+            }
+        };
+
+        // --- Render UI ---
+        function updateUI() {
+            const st = window.appState;
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            
+            // Backward compatibility
+            st.commitments.forEach(c => { if(!c.month) c.month = currentMonth; });
+            
+            // Hanya proses data untuk bulan SEMASA sahaja (Dashboard dan Senarai)
+            const currentMonthComs = st.commitments.filter(c => c.month === currentMonth);
+            const currentMonthExps = st.expenses.filter(e => e.date.startsWith(currentMonth));
+            
+            // Calculations
+            const totalCom = currentMonthComs.reduce((sum, c) => sum + c.amount, 0);
+            const paidCom = currentMonthComs.filter(c => c.isPaid).reduce((sum, c) => sum + c.amount, 0);
+            const balanceAfterCom = st.salary - totalCom;
+            const totalExp = currentMonthExps.reduce((sum, e) => sum + e.amount, 0);
+            const currentBal = balanceAfterCom - totalExp;
+
+            // --- Gamification Logic ---
+            let score = 0;
+            if (st.salary > 0) {
+                const savingsRate = Math.max(0, currentBal / st.salary); // How much % saved
+                const comRate = totalCom > 0 ? (paidCom / totalCom) : 1; // How much commitments paid
+                score = Math.round(((savingsRate * 0.6) + (comRate * 0.4)) * 100);
+                score = Math.max(0, Math.min(100, score)); // clamp 0-100
+            }
+
+            let levelText = "Baru Mula 🥉";
+            let levelColor = "text-orange-500";
+            let barColor = "bg-orange-500";
+
+            if (score >= 80) {
+                levelText = "Master Kewangan 🏆";
+                levelColor = "text-yellow-500";
+                barColor = "bg-yellow-500";
+            } else if (score >= 50) {
+                levelText = "Penyimpan Bijak 🥈";
+                levelColor = "text-blue-500";
+                barColor = "bg-blue-500";
+            }
+
+            const levelEl = document.getElementById('displayLevel');
+            levelEl.innerText = levelText;
+            levelEl.className = `text-2xl font-bold mb-2 ${levelColor}`;
+            document.getElementById('scoreBar').style.width = `${score}%`;
+            document.getElementById('scoreBar').className = `h-2.5 rounded-full ${barColor} transition-all duration-500`;
+            document.getElementById('displayScore').innerText = score;
+
+            // Dashboard Balances
+            document.getElementById('displaySalary').innerText = st.salary.toFixed(2);
+            document.getElementById('displayTotalCommitment').innerText = totalCom.toFixed(2);
+            document.getElementById('displayBalanceAfterCommitment').innerText = balanceAfterCom.toFixed(2);
+            document.getElementById('displayCurrentBalance').innerText = currentBal.toFixed(2);
+            document.getElementById('displayTotalExpense').innerText = totalExp.toFixed(2);
+
+            // Komitmen List
+            const comList = document.getElementById('commitmentList');
+            if (currentMonthComs.length === 0) {
+                comList.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Tiada komitmen ditambah bulan ini.</p>';
+            } else {
+                comList.innerHTML = currentMonthComs.map(c => `
+                    <div class="bg-white dark:bg-darkCard p-4 rounded-xl border border-gray-100 dark:border-gray-800 flex items-center justify-between shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" ${c.isPaid ? 'checked' : ''} onchange="toggleCommitment('${c.id}')" class="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary">
+                            <div>
+                                <h4 class="font-semibold ${c.isPaid ? 'line-through text-gray-400' : ''}">${c.name}</h4>
+                                <p class="text-xs text-gray-500">RM ${c.amount.toFixed(2)}</p>
+                            </div>
+                        </div>
+                        <button onclick="deleteCommitment('${c.id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                    </div>
+                `).join('');
+            }
+
+            // Expense List
+            const expList = document.getElementById('expenseList');
+            if (currentMonthExps.length === 0) {
+                expList.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Tiada perbelanjaan direkodkan bulan ini.</p>';
+            } else {
+                // Sort expenses latest first
+                const sortedExps = [...currentMonthExps].sort((a,b) => new Date(b.date) - new Date(a.date));
+                expList.innerHTML = sortedExps.map(e => {
+                    const dateObj = new Date(e.date);
+                    const dateStr = `${dateObj.getDate()}/${dateObj.getMonth()+1}`;
+                    return `
+                    <div class="bg-white dark:bg-darkCard p-4 rounded-xl border border-gray-100 dark:border-gray-800 flex items-center justify-between shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg text-primary text-center min-w-[50px]">
+                                <span class="text-xs block font-bold">${e.category.substring(0,3).toUpperCase()}</span>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-sm">${e.name}</h4>
+                                <p class="text-xs text-gray-500">${dateStr}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <p class="font-bold text-red-500 dark:text-red-400">- RM ${e.amount.toFixed(2)}</p>
+                            <button onclick="deleteExpense('${e.id}')" class="text-gray-400 hover:text-red-600 text-xs"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                `}).join('');
+            }
+        }
+
+        // --- Chart.js ---
+        function updateChart() {
+            const st = window.appState;
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#e5e7eb' : '#374151';
+            const gridColor = isDark ? '#374151' : '#e5e7eb';
+
+            // 1. PIE CHART: Perbelanjaan Mengikut Kategori
+            const ctxPie = document.getElementById('expensePieChart').getContext('2d');
+            const categories = {};
+            st.expenses.forEach(e => {
+                categories[e.category] = (categories[e.category] || 0) + e.amount;
+            });
+            const pieLabels = Object.keys(categories);
+            const pieData = Object.values(categories);
+
+            if(myPieChart) myPieChart.destroy();
+            
+            if(pieLabels.length === 0) {
+                myPieChart = new Chart(ctxPie, {
+                    type: 'doughnut',
+                    data: { labels: ['Tiada Data'], datasets: [{ data: [1], backgroundColor: [isDark ? '#374151' : '#e5e7eb'] }] },
+                    options: { plugins: { legend: { labels: { color: textColor } } } }
+                });
+            } else {
+                myPieChart = new Chart(ctxPie, {
+                    type: 'pie',
+                    data: {
+                        labels: pieLabels,
+                        datasets: [{
+                            data: pieData,
+                            backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#64748b'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom', labels: { color: textColor, padding: 20 } } }
+                    }
+                });
+            }
+
+            // 2. BAR CHART: Trend Bulanan (Pendapatan vs Perbelanjaan)
+            const ctxBar = document.getElementById('trendBarChart').getContext('2d');
+            
+            // Group expenses by YYYY-MM
+            const monthlyData = {}; 
+            
+            // Masukkan bulan semasa
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            monthlyData[currentMonth] = { income: st.salary, expense: 0 };
+            
+            st.expenses.forEach(e => {
+                const m = e.date.slice(0, 7); // extract YYYY-MM
+                if(!monthlyData[m]) monthlyData[m] = { income: st.salary, expense: 0 }; 
+                monthlyData[m].expense += e.amount;
+            });
+
+            const sortedMonths = Object.keys(monthlyData).sort();
+            // Format label jadi lebih lawa: '2023-10' -> 'Okt 2023'
+            const monthNames = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogo", "Sep", "Okt", "Nov", "Dis"];
+            const barLabels = sortedMonths.map(m => {
+                const [yyyy, mm] = m.split('-');
+                return `${monthNames[parseInt(mm)-1]} ${yyyy.substring(2)}`;
+            });
+            const barIncome = sortedMonths.map(m => monthlyData[m].income);
+            const barExpense = sortedMonths.map(m => monthlyData[m].expense);
+
+            if(myBarChart) myBarChart.destroy();
+            
+            myBarChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: barLabels,
+                    datasets: [
+                        { label: 'Pendapatan', data: barIncome, backgroundColor: '#10b981', borderRadius: 4 },
+                        { label: 'Perbelanjaan', data: barExpense, backgroundColor: '#ef4444', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { ticks: { color: textColor }, grid: { color: gridColor } },
+                        x: { ticks: { color: textColor }, grid: { display: false } }
+                    },
+                    plugins: { legend: { labels: { color: textColor } } }
+                }
+            });
+        }
+
+        // --- Gemini AI Logic ---
+        window.sendAIChat = async function() {
+            const inputEl = document.getElementById('aiInput');
+            const text = inputEl.value.trim();
+            if (!text) return;
+            
+            appendChatMsg(text, 'user');
+            inputEl.value = '';
+            
+            const loadingId = appendChatMsg('Menjana jawapan...', 'ai');
+            
+            // Construct context
+            const st = window.appState;
+            const totalCom = st.commitments.reduce((s, c) => s + c.amount, 0);
+            const totalExp = st.expenses.reduce((s, e) => s + e.amount, 0);
+            const balance = st.salary - totalCom - totalExp;
+            
+            const systemPrompt = `Anda adalah penasihat kewangan peribadi. Jawab dalam Bahasa Melayu secara ringkas dan mesra. 
+Konteks Pengguna:
+Gaji: RM${st.salary}
+Jumlah Komitmen: RM${totalCom}
+Jumlah Perbelanjaan: RM${totalExp}
+Baki Semasa: RM${balance}
+Beri nasihat yang praktikal berdasarkan maklumat ini jika relevan dengan soalan. Jangan beri respon yang terlalu panjang.`;
+
+            try {
+                const apiKey = ""; // Canvas handles this automatically
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                
+                const payload = {
+                    contents: [{ parts: [{ text: text }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                };
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                if (result.candidates && result.candidates[0].content) {
+                    updateChatMsg(loadingId, result.candidates[0].content.parts[0].text);
+                } else {
+                    updateChatMsg(loadingId, "Maaf, saya tidak dapat memproses soalan itu sekarang.");
+                }
+                
+            } catch (error) {
+                console.error("AI Error:", error);
+                updateChatMsg(loadingId, "Ralat sambungan. Sila cuba lagi.");
+            }
+        };
+
+        function appendChatMsg(text, sender) {
+            const chatBox = document.getElementById('chatBox');
+            const id = 'msg-' + Date.now();
+            const align = sender === 'user' ? 'items-end' : 'items-start';
+            const bubbleClass = sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai';
+            
+            const html = `
+                <div id="${id}" class="flex flex-col ${align} opacity-0 transition-opacity duration-300">
+                    <div class="${bubbleClass} p-3 max-w-[85%] text-sm shadow-sm whitespace-pre-wrap">${text}</div>
+                </div>
+            `;
+            chatBox.insertAdjacentHTML('beforeend', html);
+            
+            setTimeout(() => {
+                document.getElementById(id).classList.remove('opacity-0');
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 50);
+            
+            return id;
+        }
+
+        function updateChatMsg(id, text) {
+            const el = document.getElementById(id);
+            if(el) {
+                el.querySelector('div').innerText = text;
+                const chatBox = document.getElementById('chatBox');
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+        
+        // Initial setup for default theme if needed
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+
+    </script>
+</body>
+</html>
