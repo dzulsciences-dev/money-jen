@@ -4,53 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Money-Jen</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Lucide Icons (Modern & Aesthetic) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#3b82f6',
-                        dark: '#111827',
-                        darkCard: '#1f2937'
+                        primary: '#2563eb', // Modern Blue
+                        primaryLight: '#dbeafe',
+                        background: '#f8fafc', // Very clean slate-50
+                        surface: '#ffffff',
+                        textMain: '#0f172a',
+                        textMuted: '#64748b'
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.02)'
                     }
                 }
             }
         }
     </script>
+    
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; color: #111827; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; 
+            color: #0f172a; 
+            -webkit-tap-highlight-color: transparent;
+        }
         
         /* Strict Tab Isolation */
         .tab-content { display: none !important; }
         .tab-content.active { display: block !important; }
-        /* Special handling for AI tab to enable flexbox layout when active */
         #tab-ai.active { display: flex !important; flex-direction: column; }
         
-        .glass-nav { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .glass-nav { 
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px); 
+            border-top: 1px solid rgba(226, 232, 240, 0.8);
+        }
         
         /* Chat bubble styles */
-        .chat-bubble-user { background-color: #3b82f6; color: white; border-radius: 1rem 1rem 0 1rem; }
-        .chat-bubble-ai { background-color: #e5e7eb; color: black; border-radius: 1rem 1rem 1rem 0; }
+        .chat-bubble-user { background-color: #2563eb; color: white; border-radius: 1.25rem 1.25rem 0 1.25rem; }
+        .chat-bubble-ai { background-color: #f1f5f9; color: #0f172a; border-radius: 1.25rem 1.25rem 1.25rem 0; border: 1px solid #e2e8f0; }
         
-        /* Hide scrollbar for cleaner look in chat */
-        #chatBox::-webkit-scrollbar { width: 4px; }
-        #chatBox::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        /* Hide scrollbar for cleaner look */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        /* Smooth transitions */
+        .btn-transition { transition: all 0.2s ease-in-out; }
+        .btn-transition:active { transform: scale(0.95); }
     </style>
 </head>
-<body class="pb-20">
+<body class="pb-24">
 
     <!-- Top Bar with Global Month Navigation -->
-    <header class="p-4 flex justify-between items-center bg-white shadow-sm sticky top-0 z-10">
-        <h1 class="text-xl font-bold text-primary"><i class="fas fa-wallet mr-2"></i>Money-Jen</h1>
+    <header class="p-4 flex justify-between items-center bg-surface shadow-sm sticky top-0 z-10 border-b border-slate-100">
+        <h1 class="text-xl font-bold text-primary flex items-center gap-2 tracking-tight">
+            <i data-lucide="wallet" class="w-6 h-6"></i>
+            Money-Jen
+        </h1>
         
         <!-- Month Selector -->
-        <div class="flex items-center gap-3 bg-gray-100 px-3 py-1.5 rounded-full">
-            <button onclick="changeMonth(-1)" class="text-gray-500 hover:text-primary transition p-1"><i class="fas fa-chevron-left"></i></button>
-            <span id="currentMonthDisplay" class="font-semibold text-sm min-w-[70px] text-center">Okt 2026</span>
-            <button onclick="changeMonth(1)" class="text-gray-500 hover:text-primary transition p-1"><i class="fas fa-chevron-right"></i></button>
+        <div class="flex items-center gap-3 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200 shadow-inner-soft">
+            <button onclick="changeMonth(-1)" class="text-slate-500 hover:text-primary btn-transition p-1">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </button>
+            <span id="currentMonthDisplay" class="font-semibold text-sm min-w-[70px] text-center text-slate-700">...</span>
+            <button onclick="changeMonth(1)" class="text-slate-500 hover:text-primary btn-transition p-1">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
         </div>
     </header>
 
@@ -58,133 +95,178 @@
     <main class="container mx-auto p-4 max-w-md">
         
         <!-- Tab 1: Dashboard -->
-        <section id="tab-dashboard" class="tab-content active space-y-4">
+        <section id="tab-dashboard" class="tab-content active space-y-5">
             
             <!-- Gamification Section -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 text-center">
-                <h3 class="text-sm text-gray-500 font-semibold mb-1">Status Kesihatan Kewangan</h3>
-                <p id="displayLevel" class="text-2xl font-bold mb-2 text-gray-500">Menilai... ⏳</p>
-                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
-                    <div id="scoreBar" class="bg-gray-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            <div class="bg-surface p-6 rounded-3xl shadow-soft border border-slate-100 text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-indigo-500 opacity-50"></div>
+                <h3 class="text-xs text-textMuted font-semibold mb-1 uppercase tracking-wider">Kesihatan Kewangan</h3>
+                <p id="displayLevel" class="text-2xl font-bold mb-3 text-slate-400">Menilai... ⏳</p>
+                <div class="w-full bg-slate-100 rounded-full h-3 mb-2 shadow-inner-soft overflow-hidden">
+                    <div id="scoreBar" class="bg-slate-300 h-full rounded-full transition-all duration-700 ease-out" style="width: 0%"></div>
                 </div>
-                <p class="text-xs text-gray-500">Skor bulan ini: <span id="displayScore" class="font-bold">0</span>/100</p>
+                <p class="text-xs text-textMuted">Skor: <span id="displayScore" class="font-bold text-slate-700">0</span>/100</p>
             </div>
 
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                <div class="flex justify-between items-start mb-2">
-                    <h2 class="text-sm text-gray-500">Gaji / Pendapatan Bulanan</h2>
-                    <button onclick="openModal('salaryModal')" class="text-primary text-sm hover:underline"><i class="fas fa-edit"></i> Edit</button>
+            <!-- Income Section -->
+            <div class="bg-surface p-6 rounded-3xl shadow-soft border border-slate-100">
+                <div class="flex justify-between items-start mb-1">
+                    <h2 class="text-sm text-textMuted font-medium flex items-center gap-2">
+                        <i data-lucide="banknote" class="w-4 h-4 text-emerald-500"></i> Pendapatan
+                    </h2>
+                    <button onclick="openModal('salaryModal')" class="text-primary text-xs font-semibold hover:underline flex items-center gap-1 btn-transition">
+                        <i data-lucide="pencil-line" class="w-3 h-3"></i> Edit
+                    </button>
                 </div>
-                <p class="text-3xl font-bold">RM <span id="displaySalary">0.00</span></p>
+                <p class="text-3xl font-bold tracking-tight text-textMain">RM <span id="displaySalary">0.00</span></p>
             </div>
 
+            <!-- Mini Cards -->
             <div class="grid grid-cols-2 gap-4">
-                <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
-                    <h3 class="text-xs text-red-500 mb-1">Total Komitmen</h3>
-                    <p class="text-lg font-semibold text-red-600">RM <span id="displayTotalCommitment">0.00</span></p>
+                <div class="bg-red-50 p-5 rounded-3xl border border-red-100">
+                    <h3 class="text-xs text-red-500 font-medium mb-1">Komitmen</h3>
+                    <p class="text-lg font-bold text-red-700 tracking-tight">RM <span id="displayTotalCommitment">0.00</span></p>
                 </div>
-                <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
-                    <h3 class="text-xs text-blue-500 mb-1">Baki (Tolak Komitmen)</h3>
-                    <p class="text-lg font-semibold text-blue-600">RM <span id="displayBalanceAfterCommitment">0.00</span></p>
+                <div class="bg-blue-50 p-5 rounded-3xl border border-blue-100">
+                    <h3 class="text-xs text-blue-500 font-medium mb-1">Baki (Lepas Komitmen)</h3>
+                    <p class="text-lg font-bold text-blue-700 tracking-tight">RM <span id="displayBalanceAfterCommitment">0.00</span></p>
                 </div>
             </div>
 
-            <div class="bg-green-50 p-5 rounded-2xl border border-green-100">
-                <h3 class="text-sm text-green-600 mb-1">Baki Terkini (Selepas Belanja)</h3>
-                <p class="text-3xl font-bold text-green-700">RM <span id="displayCurrentBalance">0.00</span></p>
-                <p class="text-xs text-gray-500 mt-2">Jumlah Belanja: RM <span id="displayTotalExpense">0.00</span></p>
+            <!-- Current Balance -->
+            <div class="bg-emerald-50 p-6 rounded-3xl border border-emerald-100 relative overflow-hidden">
+                <i data-lucide="wallet-cards" class="w-24 h-24 absolute -right-4 -bottom-4 text-emerald-500/10"></i>
+                <h3 class="text-sm text-emerald-700 font-medium mb-1 relative z-10">Baki Boleh Belanja</h3>
+                <p class="text-4xl font-bold text-emerald-800 tracking-tight mb-2 relative z-10">RM <span id="displayCurrentBalance">0.00</span></p>
+                <div class="inline-block bg-white/60 px-3 py-1 rounded-lg text-xs text-emerald-700 font-medium border border-emerald-200/50 relative z-10">
+                    Belanja: RM <span id="displayTotalExpense">0.00</span>
+                </div>
             </div>
         </section>
 
         <!-- Tab 2: Transactions -->
-        <section id="tab-transactions" class="tab-content space-y-6">
+        <section id="tab-transactions" class="tab-content space-y-8">
             <!-- Komitmen -->
             <div>
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-lg font-bold">Komitmen Bulanan</h2>
+                <div class="flex justify-between items-end mb-4 px-1">
+                    <div>
+                        <h2 class="text-lg font-bold text-textMain">Komitmen Bulanan</h2>
+                        <p class="text-xs text-textMuted">Bil & hutang tetap</p>
+                    </div>
                     <div class="flex gap-2">
-                        <button onclick="copyPreviousCommitments()" class="bg-gray-200 text-gray-700 p-2 rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-gray-300 transition" title="Salin Komitmen Bulan Lepas"><i class="fas fa-copy"></i></button>
-                        <button onclick="openModal('commitmentModal')" class="bg-primary text-white p-2 rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-blue-600 transition" title="Tambah Komitmen"><i class="fas fa-plus"></i></button>
+                        <button onclick="copyPreviousCommitments()" class="bg-surface text-slate-600 border border-slate-200 p-2 rounded-xl w-10 h-10 flex items-center justify-center shadow-sm hover:bg-slate-50 btn-transition" title="Salin Bulan Lepas">
+                            <i data-lucide="copy" class="w-5 h-5"></i>
+                        </button>
+                        <button onclick="openModal('commitmentModal')" class="bg-primary text-white p-2 rounded-xl w-10 h-10 flex items-center justify-center shadow-md hover:bg-blue-600 shadow-blue-500/30 btn-transition" title="Tambah Komitmen">
+                            <i data-lucide="plus" class="w-5 h-5"></i>
+                        </button>
                     </div>
                 </div>
                 <div id="commitmentList" class="space-y-3">
-                    <!-- Senarai dijana secara dinamik -->
+                    <!-- Dinamik -->
                 </div>
             </div>
             
-            <hr class="border-gray-200">
+            <div class="w-full h-px bg-slate-200"></div>
             
             <!-- Belanja -->
             <div>
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-lg font-bold">Perbelanjaan</h2>
-                    <button onclick="openModal('expenseModal')" class="bg-primary text-white p-2 rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-blue-600"><i class="fas fa-plus"></i></button>
+                <div class="flex justify-between items-end mb-4 px-1">
+                    <div>
+                        <h2 class="text-lg font-bold text-textMain">Perbelanjaan</h2>
+                        <p class="text-xs text-textMuted">Belanja harian & lain-lain</p>
+                    </div>
+                    <button onclick="openModal('expenseModal')" class="bg-primary text-white p-2 rounded-xl w-10 h-10 flex items-center justify-center shadow-md hover:bg-blue-600 shadow-blue-500/30 btn-transition">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                    </button>
                 </div>
                 <div id="expenseList" class="space-y-3">
-                    <!-- Senarai dijana secara dinamik -->
+                    <!-- Dinamik -->
                 </div>
             </div>
         </section>
 
         <!-- Tab 3: Statistik -->
         <section id="tab-statistik" class="tab-content space-y-6">
-            <h2 class="text-xl font-bold">Statistik Kewangan</h2>
-            <p class="text-sm text-gray-500">Analisis untuk bulan yang dipilih.</p>
+            <div class="px-1">
+                <h2 class="text-xl font-bold text-textMain">Statistik</h2>
+                <p class="text-xs text-textMuted">Ringkasan aliran tunai bulan dipilih</p>
+            </div>
             
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                <h3 class="text-sm font-semibold mb-2 text-center text-gray-700">Ringkasan Aliran Tunai</h3>
-                <canvas id="cashflowBarChart" width="400" height="300"></canvas>
+            <div class="bg-surface p-5 rounded-3xl shadow-soft border border-slate-100">
+                <h3 class="text-sm font-semibold mb-4 text-slate-700 flex items-center gap-2">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4 text-primary"></i> Aliran Tunai
+                </h3>
+                <canvas id="cashflowBarChart" width="400" height="250"></canvas>
             </div>
 
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                <h3 class="text-sm font-semibold mb-2 text-center text-gray-700">Pecahan Perbelanjaan</h3>
-                <canvas id="expensePieChart" width="400" height="300"></canvas>
+            <div class="bg-surface p-5 rounded-3xl shadow-soft border border-slate-100">
+                <h3 class="text-sm font-semibold mb-4 text-slate-700 flex items-center gap-2">
+                    <i data-lucide="pie-chart" class="w-4 h-4 text-primary"></i> Pecahan Kategori
+                </h3>
+                <canvas id="expensePieChart" width="400" height="250"></canvas>
             </div>
         </section>
 
         <!-- Tab 4: AI Chat -->
-        <section id="tab-ai" class="tab-content h-[calc(100vh-140px)]">
-            <h2 class="text-xl font-bold mb-1">Penasihat AI</h2>
-            <p class="text-xs text-gray-500 mb-4">Berbual tentang bulan yang dipaparkan.</p>
+        <section id="tab-ai" class="tab-content h-[calc(100vh-160px)]">
+            <div class="px-1 mb-2">
+                <h2 class="text-xl font-bold text-textMain flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-amber-500"></i> AI Advisor
+                </h2>
+                <p class="text-xs text-textMuted">Panduan urus wang bulan ini.</p>
+            </div>
             
-            <div id="chatBox" class="flex-1 overflow-y-auto space-y-4 p-2 mb-4 rounded-xl bg-white border border-gray-100 shadow-inner">
+            <div id="chatBox" class="flex-1 overflow-y-auto space-y-4 p-4 mb-4 rounded-3xl bg-surface border border-slate-100 shadow-soft">
                 <div class="flex flex-col items-start">
-                    <div class="chat-bubble-ai p-3 max-w-[85%] text-sm shadow-sm">
-                        Hai! Saya penasihat kewangan AI anda. Saya sedang melihat rekod anda untuk bulan ini. Boleh saya bantu uruskan bajet anda?
+                    <div class="chat-bubble-ai p-4 max-w-[85%] text-sm shadow-sm leading-relaxed">
+                        Hai! Saya penasihat kewangan AI Money-Jen. Saya sedang memantau bajet anda. Ada apa-apa yang ingin ditanya?
                     </div>
                 </div>
             </div>
             
             <div class="flex gap-2">
-                <input type="text" id="aiInput" placeholder="Tanya sesuatu..." class="flex-1 p-3 rounded-xl border border-gray-300 bg-white focus:outline-none focus:border-primary">
-                <button onclick="sendAIChat()" class="bg-primary text-white p-3 rounded-xl hover:bg-blue-600 transition">
-                    <i class="fas fa-paper-plane"></i>
+                <input type="text" id="aiInput" placeholder="Minta tips berjimat..." class="flex-1 p-4 rounded-2xl border border-slate-200 bg-surface shadow-inner-soft text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
+                <button onclick="sendAIChat()" class="bg-primary text-white p-4 rounded-2xl shadow-md shadow-blue-500/30 hover:bg-blue-600 btn-transition flex items-center justify-center">
+                    <i data-lucide="send" class="w-5 h-5"></i>
                 </button>
             </div>
         </section>
     </main>
 
     <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 w-full bg-white/95 glass-nav border-t border-gray-200 pb-safe z-50">
-        <ul class="flex justify-around items-center p-3 text-xs">
+    <nav class="fixed bottom-0 w-full glass-nav pb-safe z-50">
+        <ul class="flex justify-around items-center p-2 text-[10px] font-medium max-w-md mx-auto">
             <li>
-                <button onclick="switchTab('dashboard')" class="nav-btn active flex flex-col items-center p-2 text-primary" data-target="dashboard">
-                    <i class="fas fa-home text-lg mb-1"></i> Dashboard
+                <button onclick="switchTab('dashboard')" class="nav-btn active flex flex-col items-center p-2 text-primary transition-colors" data-target="dashboard">
+                    <div class="w-12 h-8 flex items-center justify-center rounded-full mb-1 nav-icon-bg bg-primaryLight">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    </div>
+                    Dashboard
                 </button>
             </li>
             <li>
-                <button onclick="switchTab('transactions')" class="nav-btn flex flex-col items-center p-2 text-gray-500 hover:text-primary transition" data-target="transactions">
-                    <i class="fas fa-exchange-alt text-lg mb-1"></i> Transaksi
+                <button onclick="switchTab('transactions')" class="nav-btn flex flex-col items-center p-2 text-slate-400 hover:text-primary transition-colors" data-target="transactions">
+                    <div class="w-12 h-8 flex items-center justify-center rounded-full mb-1 nav-icon-bg">
+                        <i data-lucide="arrow-right-left" class="w-5 h-5"></i>
+                    </div>
+                    Transaksi
                 </button>
             </li>
             <li>
-                <button onclick="switchTab('statistik')" class="nav-btn flex flex-col items-center p-2 text-gray-500 hover:text-primary transition" data-target="statistik">
-                    <i class="fas fa-chart-line text-lg mb-1"></i> Statistik
+                <button onclick="switchTab('statistik')" class="nav-btn flex flex-col items-center p-2 text-slate-400 hover:text-primary transition-colors" data-target="statistik">
+                    <div class="w-12 h-8 flex items-center justify-center rounded-full mb-1 nav-icon-bg">
+                        <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+                    </div>
+                    Statistik
                 </button>
             </li>
             <li>
-                <button onclick="switchTab('ai')" class="nav-btn flex flex-col items-center p-2 text-gray-500 hover:text-primary transition" data-target="ai">
-                    <i class="fas fa-robot text-lg mb-1"></i> AI Advisor
+                <button onclick="switchTab('ai')" class="nav-btn flex flex-col items-center p-2 text-slate-400 hover:text-primary transition-colors" data-target="ai">
+                    <div class="w-12 h-8 flex items-center justify-center rounded-full mb-1 nav-icon-bg">
+                        <i data-lucide="bot" class="w-5 h-5"></i>
+                    </div>
+                    Advisor
                 </button>
             </li>
         </ul>
@@ -192,121 +274,164 @@
 
     <!-- Modals -->
     <!-- Custom Alert Modal -->
-    <div id="alertModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white p-6 rounded-2xl w-11/12 max-w-sm shadow-xl border border-gray-100">
-            <h3 id="alertTitle" class="text-lg font-bold mb-2">Makluman</h3>
-            <p id="alertMessage" class="text-sm text-gray-600 mb-6"></p>
+    <div id="alertModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-surface p-6 rounded-3xl w-full max-w-sm shadow-2xl border border-slate-100 animate-[pulse_0.2s_ease-out]">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="bg-blue-100 p-2 rounded-full text-primary">
+                    <i data-lucide="info" class="w-5 h-5"></i>
+                </div>
+                <h3 id="alertTitle" class="text-lg font-bold text-slate-800">Makluman</h3>
+            </div>
+            <p id="alertMessage" class="text-sm text-slate-600 mb-6 leading-relaxed"></p>
             <div class="flex justify-end">
-                <button onclick="closeModal('alertModal')" class="bg-primary text-white px-4 py-2 rounded-lg text-sm">Tutup</button>
+                <button onclick="closeModal('alertModal')" class="bg-slate-100 text-slate-700 hover:bg-slate-200 px-5 py-2.5 rounded-xl text-sm font-medium btn-transition">Tutup</button>
             </div>
         </div>
     </div>
 
     <!-- Edit Salary Modal -->
-    <div id="salaryModal" class="fixed inset-0 bg-black/50 z-40 hidden flex items-center justify-center">
-        <div class="bg-white p-6 rounded-2xl w-11/12 max-w-sm shadow-xl transition-all">
-            <h3 class="text-lg font-bold mb-4">Gaji / Pendapatan Bulan Ini</h3>
-            <p class="text-xs text-gray-500 mb-2">Nilai ini akan diset untuk bulan yang dipilih sahaja.</p>
-            <input type="number" id="salaryInput" placeholder="Contoh: 3000" class="w-full p-3 mb-4 rounded-xl border border-gray-300 bg-white">
-            <div class="flex justify-end gap-2">
-                <button onclick="closeModal('salaryModal')" class="px-4 py-2 text-gray-500">Batal</button>
-                <button onclick="saveSalary()" class="bg-primary text-white px-4 py-2 rounded-lg">Simpan</button>
+    <div id="salaryModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center sm:p-4">
+        <div class="bg-surface p-6 rounded-t-3xl sm:rounded-3xl w-full sm:max-w-sm shadow-2xl transition-transform transform translate-y-0">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-lg font-bold text-slate-800">Set Pendapatan</h3>
+                <button onclick="closeModal('salaryModal')" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
+            <p class="text-xs text-textMuted mb-5">Untuk bulan yang sedang dipilih sahaja.</p>
+            
+            <div class="relative mb-6">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-medium">RM</span>
+                <input type="number" id="salaryInput" placeholder="0.00" class="w-full p-4 pl-12 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-lg font-semibold">
+            </div>
+            
+            <button onclick="saveSalary()" class="w-full bg-primary text-white font-medium px-4 py-3.5 rounded-2xl shadow-md shadow-blue-500/30 hover:bg-blue-600 btn-transition">Simpan</button>
         </div>
     </div>
 
     <!-- Add Commitment Modal -->
-    <div id="commitmentModal" class="fixed inset-0 bg-black/50 z-40 hidden flex items-center justify-center">
-        <div class="bg-white p-6 rounded-2xl w-11/12 max-w-sm shadow-xl">
-            <h3 class="text-lg font-bold mb-4">Tambah Komitmen</h3>
-            <input type="text" id="comName" placeholder="Nama Komitmen (Contoh: Sewa Rumah)" class="w-full p-3 mb-3 rounded-xl border border-gray-300 bg-white">
-            <input type="number" id="comAmount" placeholder="Jumlah (RM)" class="w-full p-3 mb-4 rounded-xl border border-gray-300 bg-white">
-            <div class="flex justify-end gap-2">
-                <button onclick="closeModal('commitmentModal')" class="px-4 py-2 text-gray-500">Batal</button>
-                <button onclick="saveCommitment()" class="bg-primary text-white px-4 py-2 rounded-lg">Tambah</button>
+    <div id="commitmentModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center sm:p-4">
+        <div class="bg-surface p-6 rounded-t-3xl sm:rounded-3xl w-full sm:max-w-sm shadow-2xl">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="text-lg font-bold text-slate-800">Tambah Komitmen</h3>
+                <button onclick="closeModal('commitmentModal')" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
+            
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="text-xs font-semibold text-slate-500 ml-1 mb-1 block">Nama Komitmen</label>
+                    <input type="text" id="comName" placeholder="Cth: Sewa Rumah" class="w-full p-3.5 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-primary">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-500 ml-1 mb-1 block">Jumlah (RM)</label>
+                    <input type="number" id="comAmount" placeholder="0.00" class="w-full p-3.5 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-primary">
+                </div>
+            </div>
+            <button onclick="saveCommitment()" class="w-full bg-primary text-white font-medium px-4 py-3.5 rounded-2xl shadow-md shadow-blue-500/30 hover:bg-blue-600 btn-transition">Tambah</button>
         </div>
     </div>
 
     <!-- Add Expense Modal -->
-    <div id="expenseModal" class="fixed inset-0 bg-black/50 z-40 hidden flex items-center justify-center">
-        <div class="bg-white p-6 rounded-2xl w-11/12 max-w-sm shadow-xl">
-            <h3 class="text-lg font-bold mb-4">Tambah Perbelanjaan</h3>
-            <input type="text" id="expName" placeholder="Keterangan (Contoh: Beli Barang Dapur)" class="w-full p-3 mb-3 rounded-xl border border-gray-300 bg-white">
-            <input type="number" id="expAmount" placeholder="Jumlah (RM)" class="w-full p-3 mb-3 rounded-xl border border-gray-300 bg-white">
-            <select id="expCategory" class="w-full p-3 mb-4 rounded-xl border border-gray-300 bg-white">
-                <option value="Makan">Makan & Minum</option>
-                <option value="Pengangkutan">Minyak / Pengangkutan</option>
-                <option value="Dapur">Barang Dapur</option>
-                <option value="Shopping">Beli Belah</option>
-                <option value="Hiburan">Hiburan</option>
-                <option value="Lain-lain">Lain-lain</option>
-            </select>
-            <div class="flex justify-end gap-2">
-                <button onclick="closeModal('expenseModal')" class="px-4 py-2 text-gray-500">Batal</button>
-                <button onclick="saveExpense()" class="bg-primary text-white px-4 py-2 rounded-lg">Tambah</button>
+    <div id="expenseModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center sm:p-4">
+        <div class="bg-surface p-6 rounded-t-3xl sm:rounded-3xl w-full sm:max-w-sm shadow-2xl">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="text-lg font-bold text-slate-800">Rekod Perbelanjaan</h3>
+                <button onclick="closeModal('expenseModal')" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
+            
+            <div class="space-y-4 mb-6">
+                <div>
+                    <input type="text" id="expName" placeholder="Keterangan (Cth: Nasi Lemak)" class="w-full p-3.5 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-primary">
+                </div>
+                <div class="flex gap-3">
+                    <div class="w-1/2">
+                        <input type="number" id="expAmount" placeholder="RM 0.00" class="w-full p-3.5 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-primary">
+                    </div>
+                    <div class="w-1/2">
+                        <select id="expCategory" class="w-full p-3.5 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-primary text-sm text-slate-700">
+                            <option value="Makan">Makan Minum</option>
+                            <option value="Kenderaan">Kenderaan</option>
+                            <option value="Dapur">Dapur</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Hiburan">Hiburan</option>
+                            <option value="Lain-lain">Lain-lain</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <button onclick="saveExpense()" class="w-full bg-primary text-white font-medium px-4 py-3.5 rounded-2xl shadow-md shadow-blue-500/30 hover:bg-blue-600 btn-transition">Simpan Rekod</button>
         </div>
     </div>
 
-    <!-- Firebase & Application Logic -->
+    <!-- Application Logic & Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Initialize Lucide Icons initially
+        lucide.createIcons();
+
         // --- Core State Management ---
-        window.appState = {
-            months: {} // Data structure: { "2026-10": { salary: 0, commitments: [], expenses: [] } }
-        };
-        
-        let currentDateView = new Date(); // Tracks the currently viewed month
-        window.currentMonthKey = ''; // Format "YYYY-MM"
-        
+        window.appState = { months: {} };
+        let currentDateView = new Date(); 
+        window.currentMonthKey = ''; 
         let myPieChart = null;
         let myBarChart = null;
+        let isDataLoadedFromCloud = false; // Flag to prevent overwriting cloud data accidentally
 
-        // --- Month Navigation Logic ---
+        // --- Utility ---
         function formatMonthKey(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            return `${year}-${month}`;
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        }
+        function getCategoryIcon(cat) {
+            const map = {
+                'Makan': 'utensils',
+                'Kenderaan': 'car',
+                'Dapur': 'shopping-bag',
+                'Shopping': 'shopping-cart',
+                'Hiburan': 'gamepad-2',
+                'Lain-lain': 'more-horizontal'
+            };
+            return map[cat] || 'tag';
         }
 
+        // --- Navigation ---
         function updateMonthDisplay() {
             window.currentMonthKey = formatMonthKey(currentDateView);
-            
             const monthNames = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogo", "Sep", "Okt", "Nov", "Dis"];
-            const displayStr = `${monthNames[currentDateView.getMonth()]} ${currentDateView.getFullYear()}`;
-            document.getElementById('currentMonthDisplay').innerText = displayStr;
+            document.getElementById('currentMonthDisplay').innerText = `${monthNames[currentDateView.getMonth()]} ${currentDateView.getFullYear()}`;
             
-            // Ensure month data structure exists in local state
             if (!window.appState.months[window.currentMonthKey]) {
-                window.appState.months[window.currentMonthKey] = {
-                    salary: 0,
-                    commitments: [],
-                    expenses: []
-                };
+                window.appState.months[window.currentMonthKey] = { salary: 0, commitments: [], expenses: [] };
             }
-            
             updateUI();
         }
 
         window.changeMonth = function(offset) {
             currentDateView.setMonth(currentDateView.getMonth() + offset);
             updateMonthDisplay();
+            if(document.getElementById('tab-statistik').classList.contains('active')) updateChart();
+        };
+
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active');
             
-            // Re-render chart if on statistics tab
-            if(document.getElementById('tab-statistik').classList.contains('active')) {
-                updateChart();
-            }
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('text-primary');
+                el.classList.add('text-slate-400');
+                el.querySelector('.nav-icon-bg').classList.remove('bg-primaryLight');
+            });
+            const activeBtn = document.querySelector(`[data-target="${tabId}"]`);
+            activeBtn.classList.remove('text-slate-400');
+            activeBtn.classList.add('text-primary');
+            activeBtn.querySelector('.nav-icon-bg').classList.add('bg-primaryLight');
+
+            if (tabId === 'statistik') updateChart();
         };
 
         // --- Firebase Configuration & Sync ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'finance-app-money-jen';
-        let firebaseConfig;
-        let app, db, auth;
-        let userId = null;
+        let firebaseConfig, app, db, auth, userId = null;
 
         try {
             if (typeof __firebase_config !== 'undefined') {
@@ -315,7 +440,7 @@
                 db = getFirestore(app);
                 auth = getAuth(app);
                 
-                signInAnonymously(auth).catch((error) => console.error(error));
+                signInAnonymously(auth).catch(e => console.error(e));
 
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
@@ -324,24 +449,10 @@
                     }
                 });
             } else {
-                updateMonthDisplay(); // Offline fallback init
+                updateMonthDisplay(); 
             }
         } catch (e) {
             console.error("Firebase init error:", e);
-        }
-
-        function migrateOldData(oldData) {
-            // Function to migrate old flat structure to new monthly structure
-            let newMonths = {};
-            if (oldData.salary !== undefined || oldData.commitments || oldData.expenses) {
-                const legacyMonthKey = formatMonthKey(new Date()); // Default to current month
-                newMonths[legacyMonthKey] = {
-                    salary: oldData.salary || 0,
-                    commitments: oldData.commitments || [],
-                    expenses: oldData.expenses || []
-                };
-            }
-            return newMonths;
         }
 
         function loadData() {
@@ -351,23 +462,30 @@
             onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    
-                    // Check if it's the old structure and migrate
                     if (!data.months) {
-                        window.appState.months = migrateOldData(data);
-                        saveDataToCloud(); // Save migrated structure immediately
+                        // Data migration protection for legacy formats
+                        let migrated = {};
+                        migrated[formatMonthKey(new Date())] = {
+                            salary: data.salary || 0,
+                            commitments: data.commitments || [],
+                            expenses: data.expenses || []
+                        };
+                        window.appState.months = migrated;
                     } else {
                         window.appState = data;
                     }
                 }
-                updateMonthDisplay(); // Refreshes UI with loaded data
+                isDataLoadedFromCloud = true;
+                updateMonthDisplay();
             }, (error) => {
                 console.error("Error loading data: ", error);
             });
         }
 
         async function saveDataToCloud() {
-            if (!userId || !db) return;
+            // Only allow saving if data has been successfully loaded from cloud first, 
+            // preventing accidental overwrites of existing data with initial empty state.
+            if (!userId || !db || !isDataLoadedFromCloud) return;
             try {
                 const docRef = doc(db, 'artifacts', appId, 'users', userId, 'financeData', 'mainApp');
                 await setDoc(docRef, window.appState);
@@ -376,44 +494,27 @@
             }
         }
 
-        // --- Custom Alert ---
+        // --- UI Interactions ---
+        window.openModal = function(id) { 
+            if(id === 'salaryModal') {
+                const val = window.appState.months[window.currentMonthKey].salary;
+                document.getElementById('salaryInput').value = val ? val : '';
+            }
+            document.getElementById(id).classList.remove('hidden'); 
+        }
+        window.closeModal = function(id) { 
+            document.getElementById(id).classList.add('hidden'); 
+        }
         window.showAlert = function(message, title="Makluman") {
             document.getElementById('alertTitle').innerText = title;
             document.getElementById('alertMessage').innerText = message;
             document.getElementById('alertModal').classList.remove('hidden');
         };
 
-        // --- Navigation ---
-        window.switchTab = function(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(`tab-${tabId}`).classList.add('active');
-            
-            document.querySelectorAll('.nav-btn').forEach(el => {
-                el.classList.remove('text-primary');
-                el.classList.add('text-gray-500');
-            });
-            const activeBtn = document.querySelector(`[data-target="${tabId}"]`);
-            activeBtn.classList.remove('text-gray-500');
-            activeBtn.classList.add('text-primary');
-
-            if (tabId === 'statistik') {
-                updateChart();
-            }
-        };
-
-        window.openModal = function(id) { 
-            // Prefill salary if opening salary modal
-            if(id === 'salaryModal') {
-                document.getElementById('salaryInput').value = window.appState.months[window.currentMonthKey].salary || '';
-            }
-            document.getElementById(id).classList.remove('hidden'); 
-        }
-        window.closeModal = function(id) { document.getElementById(id).classList.add('hidden'); }
-
-        // --- Data Logic (CRUD operations target CURRENT MONTH) ---
+        // --- Data Logic (CRUD targeting CURRENT MONTH) ---
         window.saveSalary = function() {
             const val = parseFloat(document.getElementById('salaryInput').value);
-            if (isNaN(val) || val < 0) return showAlert("Sila masukkan nilai gaji yang sah.");
+            if (isNaN(val) || val < 0) return showAlert("Sila masukkan jumlah pendapatan yang sah.");
             
             window.appState.months[window.currentMonthKey].salary = val;
             closeModal('salaryModal');
@@ -424,13 +525,10 @@
         window.saveCommitment = function() {
             const name = document.getElementById('comName').value;
             const amount = parseFloat(document.getElementById('comAmount').value);
-            if (!name || isNaN(amount) || amount <= 0) return showAlert("Sila lengkapkan borang dengan betul.");
+            if (!name || isNaN(amount) || amount <= 0) return showAlert("Lengkapkan butiran komitmen dengan betul.");
             
             window.appState.months[window.currentMonthKey].commitments.push({
-                id: Date.now().toString(),
-                name,
-                amount,
-                isPaid: false
+                id: Date.now().toString(), name, amount, isPaid: false
             });
             
             document.getElementById('comName').value = '';
@@ -461,16 +559,10 @@
             const amount = parseFloat(document.getElementById('expAmount').value);
             const category = document.getElementById('expCategory').value;
             
-            if (!name || isNaN(amount) || amount <= 0) return showAlert("Sila lengkapkan borang dengan betul.");
+            if (!name || isNaN(amount) || amount <= 0) return showAlert("Sila isi butiran belanja yang sah.");
             
-            // Format to save exact date within the selected month context if possible, 
-            // but for simplicity, we just save the timestamp.
             window.appState.months[window.currentMonthKey].expenses.push({
-                id: Date.now().toString(),
-                name,
-                amount,
-                category,
-                date: new Date().toISOString()
+                id: Date.now().toString(), name, amount, category, date: new Date().toISOString()
             });
             
             document.getElementById('expName').value = '';
@@ -488,198 +580,185 @@
         };
 
         window.copyPreviousCommitments = function() {
-            // Get previous month key
             const d = new Date(currentDateView);
             d.setMonth(d.getMonth() - 1);
             const prevMonthKey = formatMonthKey(d);
-            
             const prevMonthData = window.appState.months[prevMonthKey];
             
             if (!prevMonthData || !prevMonthData.commitments || prevMonthData.commitments.length === 0) {
-                return showAlert("Tiada rekod komitmen dijumpai untuk bulan sebelumnya.");
+                return showAlert("Tiada data komitmen dijumpai pada bulan sebelumnya.");
             }
             
             let addedCount = 0;
             const currentComs = window.appState.months[window.currentMonthKey].commitments;
             
             prevMonthData.commitments.forEach(pc => {
-                // Prevent duplicate names in current month
                 const exists = currentComs.some(c => c.name.toLowerCase() === pc.name.toLowerCase());
                 if (!exists) {
                     currentComs.push({
                         id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-                        name: pc.name,
-                        amount: pc.amount,
-                        isPaid: false
+                        name: pc.name, amount: pc.amount, isPaid: false
                     });
                     addedCount++;
                 }
             });
             
             if (addedCount > 0) {
-                showAlert(`${addedCount} komitmen berjaya disalin dari bulan lepas.`, "Berjaya");
+                showAlert(`${addedCount} rekod disalin.`, "Berjaya");
                 updateUI();
                 saveDataToCloud();
             } else {
-                showAlert("Semua komitmen bulan lepas telah pun wujud dalam senarai bulan ini.");
+                showAlert("Semua komitmen dari bulan lepas sudah ada dalam bulan ini.");
             }
         };
 
         // --- Render UI ---
         function updateUI() {
             if (!window.appState.months[window.currentMonthKey]) return;
-            
             const monthData = window.appState.months[window.currentMonthKey];
             
-            // Calculations
+            // Calc
             const totalCom = monthData.commitments.reduce((sum, c) => sum + c.amount, 0);
             const paidCom = monthData.commitments.filter(c => c.isPaid).reduce((sum, c) => sum + c.amount, 0);
             const balanceAfterCom = monthData.salary - totalCom;
             const totalExp = monthData.expenses.reduce((sum, e) => sum + e.amount, 0);
             const currentBal = balanceAfterCom - totalExp;
 
-            // --- Gamification Logic (Health Score) ---
+            // Gamification Score
             let score = 0;
             if (monthData.salary > 0) {
                 const savingsRate = Math.max(0, currentBal / monthData.salary); 
                 const comRate = totalCom > 0 ? (paidCom / totalCom) : 1; 
                 score = Math.round(((savingsRate * 0.6) + (comRate * 0.4)) * 100);
-                score = Math.max(0, Math.min(100, score)); // clamp 0-100
-            } else {
-                // No salary set
-                score = 0; 
+                score = Math.max(0, Math.min(100, score));
             }
 
-            let levelText = "Perlu Rancang ⚠️";
-            let levelColor = "text-red-500";
-            let barColor = "bg-red-500";
+            let levelText = "Rancang Semula ⚠️";
+            let levelColor = "text-rose-500";
+            let barColor = "bg-gradient-to-r from-rose-400 to-red-500";
 
             if (score >= 80) {
-                levelText = "Master Kewangan 🏆";
-                levelColor = "text-green-500";
-                barColor = "bg-green-500";
+                levelText = "Sangat Baik 🏆";
+                levelColor = "text-emerald-500";
+                barColor = "bg-gradient-to-r from-emerald-400 to-teal-500";
             } else if (score >= 50) {
-                levelText = "Stabil & Bijak 🥈";
+                levelText = "Stabil 👍";
                 levelColor = "text-blue-500";
-                barColor = "bg-blue-500";
+                barColor = "bg-gradient-to-r from-blue-400 to-indigo-500";
             } else if (score > 20) {
-                levelText = "Sederhana 🥉";
-                levelColor = "text-orange-500";
-                barColor = "bg-orange-500";
+                levelText = "Berhati-hati 🥉";
+                levelColor = "text-amber-500";
+                barColor = "bg-gradient-to-r from-amber-400 to-orange-500";
             }
 
             const levelEl = document.getElementById('displayLevel');
             levelEl.innerText = levelText;
-            levelEl.className = `text-2xl font-bold mb-2 ${levelColor}`;
+            levelEl.className = `text-2xl font-bold mb-3 ${levelColor}`;
             document.getElementById('scoreBar').style.width = `${score}%`;
-            document.getElementById('scoreBar').className = `h-2.5 rounded-full ${barColor} transition-all duration-500`;
+            document.getElementById('scoreBar').className = `h-full rounded-full ${barColor} transition-all duration-700 ease-out`;
             document.getElementById('displayScore').innerText = score;
 
-            // Dashboard Balances
+            // Dash Updates
             document.getElementById('displaySalary').innerText = monthData.salary.toFixed(2);
             document.getElementById('displayTotalCommitment').innerText = totalCom.toFixed(2);
             document.getElementById('displayBalanceAfterCommitment').innerText = balanceAfterCom.toFixed(2);
             document.getElementById('displayCurrentBalance').innerText = currentBal.toFixed(2);
             document.getElementById('displayTotalExpense').innerText = totalExp.toFixed(2);
 
-            // Komitmen List Rendering
+            // Commitments UI
             const comList = document.getElementById('commitmentList');
             if (monthData.commitments.length === 0) {
-                comList.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4 italic">Tiada komitmen bulan ini.</p>';
+                comList.innerHTML = '<p class="text-center text-slate-400 text-sm py-4">Belum ada komitmen direkodkan.</p>';
             } else {
                 comList.innerHTML = monthData.commitments.map(c => `
-                    <div class="bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between shadow-sm hover:shadow-md transition">
+                    <div class="bg-surface p-4 rounded-2xl border border-slate-100 flex items-center justify-between shadow-sm">
                         <div class="flex items-center gap-3">
-                            <input type="checkbox" ${c.isPaid ? 'checked' : ''} onchange="toggleCommitment('${c.id}')" class="w-5 h-5 accent-primary rounded cursor-pointer">
+                            <input type="checkbox" ${c.isPaid ? 'checked' : ''} onchange="toggleCommitment('${c.id}')" class="w-5 h-5 accent-primary rounded cursor-pointer border-slate-300">
                             <div>
-                                <h4 class="font-semibold ${c.isPaid ? 'line-through text-gray-400' : 'text-gray-800'}">${c.name}</h4>
-                                <p class="text-xs ${c.isPaid ? 'text-gray-300' : 'text-gray-500'}">RM ${c.amount.toFixed(2)}</p>
+                                <h4 class="font-medium text-sm ${c.isPaid ? 'line-through text-slate-400' : 'text-textMain'}">${c.name}</h4>
+                                <p class="text-xs font-semibold ${c.isPaid ? 'text-slate-300' : 'text-slate-500'}">RM ${c.amount.toFixed(2)}</p>
                             </div>
                         </div>
-                        <button onclick="deleteCommitment('${c.id}')" class="text-red-300 hover:text-red-600 transition p-2"><i class="fas fa-trash"></i></button>
+                        <button onclick="deleteCommitment('${c.id}')" class="text-slate-300 hover:text-red-500 btn-transition p-2 rounded-lg hover:bg-red-50">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
                     </div>
                 `).join('');
             }
 
-            // Expense List Rendering
+            // Expenses UI
             const expList = document.getElementById('expenseList');
             if (monthData.expenses.length === 0) {
-                expList.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4 italic">Tiada perbelanjaan direkodkan bulan ini.</p>';
+                expList.innerHTML = '<p class="text-center text-slate-400 text-sm py-4">Belum ada perbelanjaan direkodkan.</p>';
             } else {
-                // Sort expenses latest first based on date saved
                 const sortedExps = [...monthData.expenses].sort((a,b) => new Date(b.date) - new Date(a.date));
-                expList.innerHTML = sortedExps.map(e => {
-                    return `
-                    <div class="bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between shadow-sm">
+                expList.innerHTML = sortedExps.map(e => `
+                    <div class="bg-surface p-4 rounded-2xl border border-slate-100 flex items-center justify-between shadow-sm">
                         <div class="flex items-center gap-3">
-                            <div class="bg-blue-50 p-2 rounded-lg text-primary text-center min-w-[50px]">
-                                <span class="text-[10px] block font-bold leading-tight">${e.category.substring(0,4).toUpperCase()}</span>
+                            <div class="bg-slate-50 border border-slate-100 p-2.5 rounded-xl text-primary flex items-center justify-center">
+                                <i data-lucide="${getCategoryIcon(e.category)}" class="w-4 h-4"></i>
                             </div>
                             <div>
-                                <h4 class="font-semibold text-sm text-gray-800">${e.name}</h4>
+                                <h4 class="font-medium text-sm text-textMain">${e.name}</h4>
+                                <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">${e.category}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <p class="font-bold text-red-500 text-sm">- RM ${e.amount.toFixed(2)}</p>
-                            <button onclick="deleteExpense('${e.id}')" class="text-gray-300 hover:text-red-600 transition p-1"><i class="fas fa-times"></i></button>
+                        <div class="flex items-center gap-2">
+                            <p class="font-bold text-slate-700 text-sm tracking-tight">-RM${e.amount.toFixed(2)}</p>
+                            <button onclick="deleteExpense('${e.id}')" class="text-slate-300 hover:text-red-500 btn-transition p-1">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
                         </div>
                     </div>
-                `}).join('');
+                `).join('');
             }
+
+            // Re-initialize dynamic Lucide icons
+            lucide.createIcons();
         }
 
-        // --- Chart.js Analytics for Selected Month ---
+        // --- Chart.js ---
         function updateChart() {
             const monthData = window.appState.months[window.currentMonthKey];
             if (!monthData) return;
             
-            const textColor = '#374151';
-            
-            // 1. BAR CHART: Cashflow Summary
             const totalCom = monthData.commitments.reduce((sum, c) => sum + c.amount, 0);
             const totalExp = monthData.expenses.reduce((sum, e) => sum + e.amount, 0);
             const balance = monthData.salary - totalCom - totalExp;
             
+            // Bar Chart
             const ctxBar = document.getElementById('cashflowBarChart').getContext('2d');
             if(myBarChart) myBarChart.destroy();
-            
             myBarChart = new Chart(ctxBar, {
                 type: 'bar',
                 data: {
                     labels: ['Pendapatan', 'Komitmen', 'Belanja', 'Baki'],
                     datasets: [{
-                        label: 'Nilai (RM)',
                         data: [monthData.salary, totalCom, totalExp, Math.max(0, balance)],
                         backgroundColor: ['#10b981', '#ef4444', '#f59e0b', '#3b82f6'],
-                        borderRadius: 4
+                        borderRadius: 6,
+                        borderSkipped: false
                     }]
                 },
                 options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
-                        x: { grid: { display: false } }
-                    }
+                    responsive: true, plugins: { legend: { display: false } },
+                    scales: { y: { border: {display: false}, grid: { color: '#f1f5f9' } }, x: { border: {display: false}, grid: { display: false } } }
                 }
             });
 
-            // 2. PIE CHART: Perbelanjaan Mengikut Kategori
+            // Pie Chart
             const ctxPie = document.getElementById('expensePieChart').getContext('2d');
             const categories = {};
-            monthData.expenses.forEach(e => {
-                categories[e.category] = (categories[e.category] || 0) + e.amount;
-            });
+            monthData.expenses.forEach(e => { categories[e.category] = (categories[e.category] || 0) + e.amount; });
             const pieLabels = Object.keys(categories);
             const pieData = Object.values(categories);
 
             if(myPieChart) myPieChart.destroy();
-            
             if(pieLabels.length === 0) {
                 myPieChart = new Chart(ctxPie, {
                     type: 'doughnut',
-                    data: { labels: ['Tiada Data'], datasets: [{ data: [1], backgroundColor: ['#f3f4f6'] }] },
-                    options: { plugins: { legend: { display: false } }, cutout: '70%' }
+                    data: { labels: ['Kosong'], datasets: [{ data: [1], backgroundColor: ['#f1f5f9'], borderWidth:0 }] },
+                    options: { plugins: { legend: { display: false } }, cutout: '75%', animation: false }
                 });
             } else {
                 myPieChart = new Chart(ctxPie, {
@@ -689,20 +768,15 @@
                         datasets: [{
                             data: pieData,
                             backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#64748b'],
-                            borderWidth: 2,
-                            borderColor: '#ffffff'
+                            borderWidth: 2, borderColor: '#ffffff'
                         }]
                     },
-                    options: {
-                        responsive: true,
-                        cutout: '50%',
-                        plugins: { legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true } } }
-                    }
+                    options: { responsive: true, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font:{family:'Inter'} } } } }
                 });
             }
         }
 
-        // --- Gemini AI Logic (Contextualized by Selected Month) ---
+        // --- Gemini AI ---
         window.sendAIChat = async function() {
             const inputEl = document.getElementById('aiInput');
             const text = inputEl.value.trim();
@@ -710,49 +784,37 @@
             
             appendChatMsg(text, 'user');
             inputEl.value = '';
-            
-            const loadingId = appendChatMsg('Menganalisa data bulan ini...', 'ai');
+            const loadingId = appendChatMsg('Menganalisa data...', 'ai');
             
             const monthData = window.appState.months[window.currentMonthKey];
             const totalCom = monthData.commitments.reduce((s, c) => s + c.amount, 0);
             const totalExp = monthData.expenses.reduce((s, e) => s + e.amount, 0);
-            const balance = monthData.salary - totalCom - totalExp;
-            
             const displayMonth = document.getElementById('currentMonthDisplay').innerText;
             
-            const systemPrompt = `Anda adalah penasihat kewangan peribadi bernama "Money-Jen". Jawab dalam Bahasa Melayu secara ringkas, mesra dan profesional. 
-Konteks Pengguna Untuk Bulan: ${displayMonth}
-Gaji: RM${monthData.salary}
-Jumlah Komitmen: RM${totalCom}
-Jumlah Perbelanjaan: RM${totalExp}
-Baki Semasa: RM${balance}
-Beri nasihat yang praktikal berdasarkan maklumat bulan ini. Jangan beri respon yang terlalu panjang.`;
+            const systemPrompt = `Anda ialah penasihat kewangan AI bernama "Money-Jen". Anda sangat profesional, ringkas dan membantu.
+Data Pengguna untuk ${displayMonth}:
+Pendapatan: RM${monthData.salary}
+Komitmen: RM${totalCom}
+Belanja Semasa: RM${totalExp}
+Baki Semasa: RM${monthData.salary - totalCom - totalExp}
+Beri respons dalam Bahasa Melayu. Jangan tulis terlalu panjang.`;
 
             try {
-                const apiKey = ""; // Canvas handles this automatically
+                const apiKey = ""; // Canvas framework injects this
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-                
-                const payload = {
-                    contents: [{ parts: [{ text: text }] }],
-                    systemInstruction: { parts: [{ text: systemPrompt }] }
-                };
-                
                 const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text }] }], systemInstruction: { parts: [{ text: systemPrompt }] } })
                 });
                 
                 const result = await response.json();
                 if (result.candidates && result.candidates[0].content) {
                     updateChatMsg(loadingId, result.candidates[0].content.parts[0].text);
                 } else {
-                    updateChatMsg(loadingId, "Maaf, saya tidak dapat memproses soalan itu sekarang.");
+                    updateChatMsg(loadingId, "Maaf, sistem tidak dapat memproses permintaan ini.");
                 }
-                
             } catch (error) {
-                console.error("AI Error:", error);
-                updateChatMsg(loadingId, "Ralat sambungan AI. Sila cuba lagi.");
+                updateChatMsg(loadingId, "Ralat rangkaian. Sila cuba sebentar lagi.");
             }
         };
 
@@ -762,18 +824,15 @@ Beri nasihat yang praktikal berdasarkan maklumat bulan ini. Jangan beri respon y
             const align = sender === 'user' ? 'items-end' : 'items-start';
             const bubbleClass = sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai';
             
-            const html = `
+            chatBox.insertAdjacentHTML('beforeend', `
                 <div id="${id}" class="flex flex-col ${align} opacity-0 transition-opacity duration-300 w-full">
-                    <div class="${bubbleClass} p-3 max-w-[85%] text-sm shadow-sm whitespace-pre-wrap">${text}</div>
+                    <div class="${bubbleClass} p-4 max-w-[85%] text-sm shadow-sm whitespace-pre-wrap leading-relaxed">${text}</div>
                 </div>
-            `;
-            chatBox.insertAdjacentHTML('beforeend', html);
-            
+            `);
             setTimeout(() => {
                 document.getElementById(id).classList.remove('opacity-0');
                 chatBox.scrollTop = chatBox.scrollHeight;
             }, 50);
-            
             return id;
         }
 
